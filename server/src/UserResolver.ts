@@ -9,9 +9,9 @@ import {
 } from "type-graphql";
 import { User } from "./entity/User";
 import { compare, hash } from "bcryptjs";
-import { sign } from "jsonwebtoken";
 
 import { MyContext } from "./ApolloContext";
+import { createRefreshtoken, createAccessToken } from "./auth";
 
 @ObjectType()
 class LoginResponse {
@@ -67,22 +67,12 @@ export class UserResolver {
     }
     const { res } = ctx;
     // refresh token in cookie
-    res.cookie(
-      "jid",
-      sign({ userId: user.id }, "al;kas;dklf;", {
-        expiresIn: "7d"
-      }),
-      {
-        httpOnly: true
-      }
-    );
+    res.cookie("jid", createRefreshtoken(user), {
+      httpOnly: true
+    });
 
     return {
-      accessToken: sign(
-        { userId: user.id, userEmail: user.email },
-        "asdlfajs;dlfka",
-        { expiresIn: "15m" }
-      )
+      accessToken: createAccessToken(user)
     };
   }
 }
