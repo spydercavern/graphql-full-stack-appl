@@ -5,13 +5,15 @@ import {
   Arg,
   ObjectType,
   Field,
-  Ctx
+  Ctx,
+  UseMiddleware
 } from "type-graphql";
 import { User } from "./entity/User";
 import { compare, hash } from "bcryptjs";
 
 import { MyContext } from "./ApolloContext";
 import { createRefreshtoken, createAccessToken } from "./auth";
+import { isAuth } from "./isAuth";
 
 @ObjectType()
 class LoginResponse {
@@ -24,6 +26,12 @@ export class UserResolver {
   @Query(() => String)
   hello() {
     return "Hey there from user resovler";
+  }
+
+  @Query(() => String)
+  @UseMiddleware(isAuth)
+  bye(@Ctx() { payload }: MyContext) {
+    return `bye, see you userId : ${payload!.userEmail}`;
   }
 
   @Query(() => [User])
