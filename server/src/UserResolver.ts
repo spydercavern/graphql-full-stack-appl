@@ -9,6 +9,11 @@ export class UserResolver {
     return "Hey there from user resovler";
   }
 
+  @Query(() => [User])
+  async users() {
+    return await User.find();
+  }
+
   @Mutation(() => Boolean)
   async register(
     @Arg("email") email: string,
