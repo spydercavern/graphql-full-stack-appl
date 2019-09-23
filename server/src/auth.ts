@@ -1,5 +1,6 @@
 import { User } from "./entity/User";
 import { sign } from "jsonwebtoken";
+import { Response } from "express";
 
 export const createAccessToken = (user: User) => {
   return sign(
@@ -12,7 +13,15 @@ export const createAccessToken = (user: User) => {
 };
 
 export const createRefreshtoken = (user: User) => {
-  return sign({ userId: user.id }, process.env.REFRESH_TOKEN_SECRET!, {
-    expiresIn: "7d"
-  });
+  return sign(
+    { userId: user.id, tokenVersion: user.tokenVersion },
+    process.env.REFRESH_TOKEN_SECRET!,
+    {
+      expiresIn: "7d"
+    }
+  );
+};
+
+export const sendRefreshToken = (res: Response, user: User) => {
+  res.cookie("jid", createRefreshtoken(user), { httpOnly: true });
 };

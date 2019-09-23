@@ -6,14 +6,16 @@ import {
   ObjectType,
   Field,
   Ctx,
-  UseMiddleware
+  UseMiddleware,
+  Int
 } from "type-graphql";
 import { User } from "./entity/User";
 import { compare, hash } from "bcryptjs";
 
 import { MyContext } from "./ApolloContext";
-import { createRefreshtoken, createAccessToken } from "./auth";
+import { createAccessToken, sendRefreshToken } from "./auth";
 import { isAuth } from "./isAuth";
+import { getConnection } from "typeorm";
 
 @ObjectType()
 class LoginResponse {
@@ -37,6 +39,14 @@ export class UserResolver {
   @Query(() => [User])
   async users() {
     return await User.find();
+  }
+
+  @Mutation(() => Boolean)
+  async revokeRefreshTokenForUser(@Arg("userId", () => Int) userId: number) {
+    await getConnection()
+      .getRepository(User)
+      .increment({ id: userId }, "tokenVersion", 1);
+    return true;
   }
 
   @Mutation(() => Boolean)
@@ -75,9 +85,7 @@ export class UserResolver {
     }
     const { res } = ctx;
     // refresh token in cookie
-    res.cookie("jid", createRefreshtoken(user), {
-      httpOnly: true
-    });
+    sendRefreshToken(res, user);
 
     return {
       accessToken: createAccessToken(user)
