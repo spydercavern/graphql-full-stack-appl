@@ -27,7 +27,7 @@ class LoginResponse {
 export class UserResolver {
   @Query(() => String)
   hello() {
-    return "Hey there from user resovler";
+    return "Hey there";
   }
 
   @Query(() => String)
